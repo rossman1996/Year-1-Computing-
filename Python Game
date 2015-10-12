@@ -1,0 +1,85 @@
+import pygame
+import os
+
+class Zombie(object):  
+    def __init__(self):
+        self.image = pygame.image.load("shortZombie.png")
+        self.x = 750
+        self.y = 30
+
+    def movement(self):
+
+        key = pygame.key.get_pressed()
+        move = 2 
+        if key[pygame.K_DOWN]: 
+            self.y += move # move down
+        elif key[pygame.K_UP]:
+            self.y -= move # move up
+        if key[pygame.K_RIGHT]: 
+            self.x += move # move right
+        elif key[pygame.K_LEFT]: 
+            self.x -= move # move left
+
+    def draw(self, surface):
+        surface.blit(self.image, (self.x, self.y))
+
+##    def fire(self,surface):
+##        self.bullet.image = pygame.image.load("bullet.png")
+##        surface.blit(self.bullet.image,(self.x, self.y))
+        
+
+
+pygame.init()
+pygame.mixer.init()
+screen = pygame.display.set_mode((800, 336))
+background = pygame.image.load("back1.png")
+zombie = Zombie()
+pygame.mixer.music.load("backgroundMusic.wav")
+pygame.mixer.music.play(1,)
+clock = pygame.time.Clock()
+backgroundNo = 0
+running = True
+while running:
+    for event in pygame.event.get():
+        if event.type == pygame.QUIT:
+            pygame.quit() 
+            running = False
+    if backgroundNo == 0:
+        background = pygame.image.load("back1.png")
+        backgroundNo+=1
+        screen.blit(background,[0,0])
+    elif backgroundNo ==1:
+        background = pygame.image.load("back2.png")
+        backgroundNo+=1
+        screen.blit(background,[0,0])
+    elif backgroundNo ==2:
+        background = pygame.image.load("back3.png")
+        backgroundNo+=1
+        screen.blit(background,[0,0])
+    elif backgroundNo ==3:
+        background = pygame.image.load("back4.png")
+        backgroundNo+=1
+        screen.blit(background,[0,0])
+    elif backgroundNo ==4:
+        background = pygame.image.load("back5.png")
+        backgroundNo+=1
+        screen.blit(background,[0,0])
+    elif backgroundNo ==5:
+        background = pygame.image.load("back6.png")
+        backgroundNo+=1
+        screen.blit(background,[0,0])
+    elif backgroundNo ==6:
+        background = pygame.image.load("back7.png")
+        backgroundNo+=1
+        screen.blit(background,[0,0])
+    elif backgroundNo ==7:
+        background = pygame.image.load("back8.png")
+        backgroundNo=0
+        screen.blit(background,[0,0])
+        
+    zombie.movement() 
+    zombie.draw(screen) 
+    pygame.display.update() 
+
+    clock.tick(20)
+    
