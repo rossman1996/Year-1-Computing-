@@ -23,11 +23,6 @@ class Zombie(object):
     def draw(self, surface):
         surface.blit(self.image, (self.x, self.y))
 
-##    def fire(self,surface):
-##        self.bullet.image = pygame.image.load("bullet.png")
-##        surface.blit(self.bullet.image,(self.x, self.y))
-        
-
 
 pygame.init()
 pygame.mixer.init()
