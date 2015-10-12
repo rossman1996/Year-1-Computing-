@@ -1,0 +1,549 @@
+import controlP5.*;
+import ketai.sensors.*;
+import ketai.net.*;
+import ketai.data.*;
+import ketai.ui.*;
+import ketai.net.nfc.record.*;
+import ketai.camera.*;
+import ketai.net.nfc.*;
+import ketai.cv.facedetector.*;
+import ketai.net.bluetooth.*;
+ControlP5 cp5; // need the main class for all controlP5 commands to work
+public int red = 0 , green  = 0, blue = 0 ,trans= 255; //Setting the start values for RGB and A
+public int erase = 0 , changebackground = 0; //Buttons and Sliders Values for the colour change
+public int penWidth = 10; //Draw Width
+public String drawType = "Line"; //Draw type i.e Square Circle???
+public int lineonX, lineonY; // Integer values for the drawing of shapes
+public int counter6 = 0, counter7=0, counter8=0, counter9=0, saveCounter = 1; //Counters 
+public boolean fill = false;
+public int c6Red = 0, c6Blue = 0, c6Green = 0, c7Red = 0, c7Blue = 0, c7Green = 0, c8Red = 0, c8Blue = 0, c8Green = 0, c9Red = 0, c9Blue = 0, c9Green = 0 ; // Set Colours
+PImage img; //image for The drop down interaction
+color hover = color(red, green, blue); //set the colour when hovering over objects
+Slider r;
+Slider b;
+Slider g;
+ColorPicker cp;
+void setup() { //Set up
+  size(1920, 1080); //resolution size 
+  frameRate(200); //Specifies the number of frames to be displayed every second
+  loadPixels();  // loads the pixels
+  orientation(LANDSCAPE); //sets the orientation to landscape
+  cp5 = new ControlP5(this); ;  
+  PFont pfont = createFont("Arial",20,false); //Creating Pfont and setting it to Arial size 20
+  ControlFont font = new ControlFont(pfont,241); //Setting font to the Pfont
+  Group top = cp5.addGroup("top") // The grouping for the drop down menu
+                .setPosition(0,40)
+                .setWidth(displayWidth)
+                .activateEvent(true)
+                .setBackgroundColor(color(110,97,97))
+                .setBackgroundHeight(250)
+                .setLabel("Tools")
+                .setColorBackground(125)
+                .close()
+                .setHeight(40)
+                ;
+  cp5.addButton("erase")  //add button 
+         .setValue(0)
+         .setPosition(0,0)
+         .setSize(150,75)
+         .setGroup(top)
+         .setColorBackground(125)
+         .getCaptionLabel()
+         .setFont(font)
+         .setSize(20)         
+   ;
+  cp5.addButton("Save")  //add button 
+         .setValue(0)
+         .setPosition(0,160)
+         .setSize(150,75)
+         .setGroup(top)
+         .setColorBackground(125)
+         .getCaptionLabel()
+         .setFont(font)
+         .setSize(20)         
+   ;     
+   cp5.addButton("clear")
+         .setValue(0)
+         .setPosition(155,0)
+         .setSize(150,75)
+         .setGroup(top)              //Locking the controller to the group (top)
+         .setColorBackground(125)
+         .getCaptionLabel()
+         .setFont(font)
+         .setSize(20)           
+    ;
+
+    cp5.addButton("changebackground") //add button 
+         .setValue(0)
+         .setPosition(310,0)
+         .setSize(150,75)
+         .setGroup(top)
+         .setColorBackground(125)
+         .getCaptionLabel()
+         .setFont(font)
+         .setSize(12)           
+    ;
+   r = cp5.addSlider("red")   //add the pen width slider
+         .setPosition(465,0)
+         .setSize(256,40)
+         .setRange(1,255)
+         .setValue(128)
+         .setGroup(top)
+         .setColorValueLabel(0)
+         .setColorForeground( color(red,0,0))
+         .setColorBackground( color(255,0,0))
+         .setValueLabel(" ")
+         .setLabelVisible(false)
+    ;         
+    b = cp5.addSlider("blue")   //add the pen width slider
+         .setPosition(465,86)
+         .setSize(256,40)
+         .setRange(0,255)
+         .setValue(128)
+         .setGroup(top)
+         .setColorValueLabel(0)
+         .setColorForeground( color(0,0,blue))
+         .setColorBackground( color(0,0,255))
+         .setValueLabel(" ")
+         .setLabelVisible(false)
+    ; 
+    cp5.addSlider("trans")   //add the pen width slider
+         .setPosition(465,129)
+         .setSize(256,40)
+         .setRange(0,255)
+         .setValue(128)
+         .setGroup(top)
+         .setColorValueLabel(0)
+         .setColorForeground( color(255,255,255,125))
+         .setColorBackground( color(205))
+         .setValueLabel(" ")
+         .setLabelVisible(false)
+    ;
+    cp5.addSlider("viewColour")   //add the pen width slider
+         .setPosition(465,172)
+         .setSize(256,75)
+         .setRange(0,255)
+         .setValue(128)
+         .setGroup(top)
+         .setColorValueLabel(0)
+         .setColorBackground( color(red,green,blue))
+         .setColorForeground( color(red,green,blue))
+         .setValueLabel(" ")
+         .setLabelVisible(false)
+    ;
+    g = cp5.addSlider("green")   //add the pen width slider
+         .setPosition(465,43)
+         .setSize(256,40)
+         .setRange(0,255)
+         .setValue(128)
+         .setGroup(top)
+         .setColorValueLabel(0)
+         .setColorForeground( color(0,255,0))
+         .setColorBackground( color(0,green,0))
+         .setValueLabel(" ")
+         .setLabelVisible(false)
+    ;
+    cp5.addSlider("penWidth")   //add the pen width slider
+         .setPosition(725,0)
+         .setSize(200,40)
+         .setRange(1,200)
+         .setValue(128)
+         .setGroup(top)
+         .setColorValueLabel(0)
+         .setColorForeground(5)
+         .setColorBackground( color(125)) 
+    ;
+    cp5.addButton("squares")  //add button 
+         .setValue(0)
+         .setPosition(0,80)
+         .setSize(150,75)
+         .setGroup(top)
+         .setColorBackground(125)
+         .getCaptionLabel()
+         .setFont(font)
+         .setSize(20)           
+    ;
+    cp5.addButton("fill")  //add button 
+         .setValue(0)
+         .setPosition(310,160)
+         .setSize(150,75)
+         .setGroup(top)
+         .setColorBackground(125)
+         .getCaptionLabel()
+         .setFont(font)
+         .setSize(20)           
+    ;
+    cp5.addButton("circle")  //add button 
+         .setValue(0)
+         .setPosition(155,80)
+         .setSize(150,75)
+         .setGroup(top)
+         .setColorBackground(125)
+         .getCaptionLabel()
+         .setFont(font)
+         .setSize(20)           
+    ;
+    cp5.addButton("pen")  //add button
+         .setValue(0)
+         .setPosition(310,80)
+         .setSize(150,75)
+         .setGroup(top)
+         .setColorBackground(125)
+         .getCaptionLabel()
+         .setFont(font)
+         .setSize(20)           
+    ;
+    cp5.addButton("WipeColours")  //add button 
+         .setValue(0)
+         .setPosition(155,160)
+         .setSize(150,75)
+         .setGroup(top)
+         .setColorBackground(125)
+         .getCaptionLabel()
+         .setFont(font)
+         .setSize(15)           
+    ;
+    cp5.addButton("c1")  //add button 
+         .setValue(0)
+         .setPosition(1000,30)
+         .setSize(50,50)
+         .setGroup(top)
+         .setValueLabel(" ")
+         .setLabelVisible(false)
+         .setColorBackground( color(0,0,0))
+    ;
+    cp5.addButton("c2")  //add button 
+         .setValue(0)
+         .setPosition(1055,30)
+         .setSize(50,50)
+         .setGroup(top)
+         .setValueLabel(" ")
+         .setLabelVisible(false)
+         .setColorBackground( color(255,255,255))
+    ;
+    cp5.addButton("c3")  //add button 
+         .setValue(0)
+         .setPosition(1110,30)
+         .setSize(50,50)
+         .setGroup(top)
+         .setValueLabel(" ")
+         .setLabelVisible(false)
+         .setColorBackground( color(255,0,0))
+    ;
+    cp5.addButton("c4")  //add button 
+         .setValue(0)
+         .setPosition(1000,85)
+         .setSize(50,50)
+         .setGroup(top)
+         .setValueLabel(" ")
+         .setLabelVisible(false)
+         .setColorBackground( color(0,255,0))
+    ;
+    cp5.addButton("c5")  //add button 
+         .setValue(0)
+         .setPosition(1055,85)
+         .setSize(50,50)
+         .setGroup(top)
+         .setValueLabel(" ")
+         .setLabelVisible(false)
+         .setColorBackground( color(0,0,255))
+    ;
+    cp5.addButton("c6")  //add button 
+         .setValue(0)
+         .setPosition(1110,85)
+         .setSize(50,50)
+         .setGroup(top)
+         .setValueLabel(" ")
+         .setLabelVisible(false)
+         .setColorBackground( color(255));
+    ;
+    cp5.addButton("c7")  //add button 
+         .setValue(0)
+         .setPosition(1000,140)
+         .setSize(50,50)
+         .setGroup(top)
+         .setValueLabel(" ")
+         .setLabelVisible(false)
+         .setColorBackground( color(255));
+    ;
+    cp5.addButton("c8")  //add button 
+         .setValue(0)
+         .setPosition(1055,140)
+         .setSize(50,50)
+         .setGroup(top)
+         .setValueLabel(" ")
+         .setLabelVisible(false)
+         .setColorBackground( color(255));
+    ;
+    cp5.addButton("c9")  //add button 
+         .setValue(0)
+         .setPosition(1110,140)
+         .setSize(50,50)
+         .setGroup(top)
+         .setValueLabel(" ")
+         .setLabelVisible(false)
+         .setColorBackground( color(255));
+    ;
+    cp5.addTextlabel("label") //add Label
+         .setText("Select Colour")
+         .setPosition(1000,0)
+         .setFont(createFont("Arial",20))
+         .setGroup(top)
+    ;
+
+}
+void draw() {
+  
+  if(mousePressed && drawType =="Line"){ //When the mouse is pressed and draw type is set to Line = Draw a line at mouse position 
+      line(mouseX, mouseY, pmouseX, pmouseY);
+      smooth();
+      strokeWeight(penWidth); //With the value set to penWidth Slider
+      stroke(red,green,blue,trans); //Sets the colours to the RGB and Aplha slider    
+   }
+   
+  if(mousePressed && drawType =="Square" && fill == true) { //Filled Square 
+      updatePixels();   //Updates the pixzels so that only one shape is made not an array of them
+      stroke(red,green,blue); 
+      strokeWeight(penWidth);
+      fill(red,green,blue); // make the fill to adapt to RGB
+      rect(lineonX, lineonY, mouseX-lineonX, mouseY-lineonY); 
+   }  
+   
+  if(mousePressed && drawType =="Square") { //Draw hollow Squasre
+      updatePixels();
+      stroke(red,green,blue); 
+      strokeWeight(penWidth);
+      noFill(); 
+      rect(lineonX, lineonY, mouseX-lineonX, mouseY-lineonY); 
+  } 
+  
+  if(mousePressed && drawType =="Circle"){ // Hollow Circle:L
+      updatePixels();
+      stroke(red,green,blue); 
+      strokeWeight(penWidth);
+      noFill(); // make the fill to adapt to RGB currently no fill
+      ellipse(lineonX, lineonY, mouseX-lineonX, mouseY-lineonY); 
+  } 
+  
+  if(mousePressed && drawType =="Circle" && fill == true){
+      updatePixels();
+      stroke(red,green,blue); 
+      strokeWeight(penWidth);
+      fill(red,green,blue); // make the fill to adapt to RGB 
+      ellipse(lineonX, lineonY, mouseX-lineonX, mouseY-lineonY); 
+  } // draws the Filled Circle
+  
+  if(cp5.isMouseOver()) {  // check if the mouse is inside of any of the buttons
+    fill(hover);   //IF it is then colour indicate to the colour Hover         
+  } else {
+    fill(255); 
+  }
+}
+
+public void erase() {
+  drawType ="Line"; //sets draw type to line
+  red = 255;            //and all the colors to white
+  green = 255;
+  blue = 255;
+  trans = 255;
+}
+
+public void changebackground() {
+  background(red,green,blue,trans); //Changes background to the current RGB
+}
+
+public void controlEvent(ControlEvent c) { 
+  if(c.isFrom(r)) {
+     red = int(c.getValue());     //This represents the code for the red color slide. This will only change the red hue 
+     cp5.getController("viewColour").setColorBackground(color(red,green,blue));
+     cp5.getController("viewColour").setColorForeground(color(red,green,blue));
+     cp5.getController("red").setColorForeground(color(red,0,0));
+  }
+  if(c.isFrom(b)) {
+     blue = int(c.getValue());     //This represents the code for the red color slide. This will only change the red hue 
+     cp5.getController("viewColour").setColorBackground(color(red,green,blue));
+     cp5.getController("viewColour").setColorForeground(color(red,green,blue));
+     cp5.getController("blue").setColorForeground(color(0,0,blue));
+  }
+  if(c.isFrom(g)) {
+     green = int(c.getValue());     //This represents the code for the red color slide. This will only change the red hue 
+     cp5.getController("viewColour").setColorBackground(color(red,green,blue));
+     cp5.getController("viewColour").setColorForeground(color(red,green,blue));
+     cp5.getController("green").setColorForeground(color(0,green,0));
+  }  
+  if(c.isGroup()) {                                      //Checks if the drop down groupign is open or closed
+    println("got an event from group "
+            +c.getGroup().getName()
+            +", isOpen? "+c.getGroup().isOpen());            
+  } 
+}
+
+public void squares(){
+  if (drawType =="Square"){ //if DrawType is already square then set back to line
+    drawType = "Line";
+  }else{
+     drawType = "Square"; //if it isn't set it to square
+   }
+}
+
+public void circle(){
+  if (drawType =="Circle"){
+    drawType = "Line";
+  }else{
+     drawType = "Circle";
+   }
+}
+
+public void pen(){
+  drawType ="Line";
+}
+
+void mousePressed() { 
+  lineonX = mouseX; lineonY = mouseY; //Set LineonY and LineonX to the current X and Y
+  
+  if (mouseY < 39  && saveCounter == 1){ //If the mouses positions is on the drop down menu and the counter is 1 i.e OPening then drop down
+    save("Draw.jpeg");    //Save the current drawing
+    saveCounter = saveCounter + 1; // and add one to coutner
+    println("SAVE");
+  }else if (mouseY < 39 && saveCounter == 2){ //When drop down is closed
+    img = loadImage("Draw.jpeg"); //load the drawing
+    saveCounter = 1; //reset the counter
+    image(img, 0, 0); //Paste the image 
+  }
+} 
+  
+void mouseReleased() { 
+  loadPixels(); 
+}
+
+public void c1(){ //set colour to black
+  red = 0;
+  blue = 0;
+  green = 0;
+}
+
+public void c2(){//Set to white
+  red = 255;
+  blue = 255;
+  green = 255;
+}
+
+public void c3(){//Red
+  red = 255;
+  blue = 0;
+  green = 0;
+}
+
+public void c4(){//green
+  red = 0;
+  blue = 0;
+  green = 255;
+}
+
+public void c5(){//blue
+  red = 0;
+  blue = 255;
+  green = 0;;
+}
+
+public void c6(int counter6){//Saves the current RGB value
+  counter6 = (counter6 + 1);
+  println(counter6);
+  
+  if (counter6 == 2){
+      cp5.getController("c6").setColorBackground(color(red,green,blue)); //If the counter  = 2 then set the controller background to the RGB colour
+      counter6 = -50;
+      c6Red = red;
+      c6Blue = blue;
+      c6Green = green;
+  }
+  if (counter6 == 1);{ //When counter is one change the pen colour
+      red = c6Red;
+      blue = c6Blue;
+      green = c6Green;
+  }
+}
+
+public void c7(){
+  counter7 = (counter7 + 1);
+  println(counter7);
+  
+  if (counter7 == 2){
+      cp5.getController("c7").setColorBackground(color(red,green,blue));
+      counter7 = -50;
+      c7Red = red;
+      c7Blue = blue;
+      c7Green = green;
+   }
+  if (counter7 == 1);{
+      red = c7Red;
+      blue = c7Blue;
+      green = c7Green;
+   }
+}
+
+public void c8(){
+  counter8 = (counter8 + 1);
+  println(counter8);
+  
+  if (counter8 == 2){
+      cp5.getController("c8").setColorBackground( color(red,green,blue));
+      counter8 = -50;
+      c8Red = red;
+      c8Blue = blue;
+      c8Green = green;
+  }
+  if (counter8 == 1);{
+      red = c8Red;
+      blue = c8Blue;
+      green = c8Green;
+  }
+}
+
+public void c9(){
+  counter9 = (counter9 + 1);
+  println(counter9);
+  
+  if (counter9 == 2){
+      cp5.getController("c9").setColorBackground( color(red,green,blue));
+      counter9 = -50;
+      c9Red = red;
+      c9Blue = blue;
+      c9Green = green;
+  }
+  if (counter9 == 1);{
+      red = c9Red;
+      blue = c9Blue;
+      green = c9Green;
+  }
+}
+
+public void fill(){
+  if (fill == true){
+      fill = false;
+  }else{ 
+      fill = true;
+  }
+}
+
+public void WipeColours(){ //resets all the counters and the colour of the controllers to white
+  cp5.getController("c6").setColorBackground( color(255));
+  cp5.getController("c7").setColorBackground( color(255));
+  cp5.getController("c8").setColorBackground( color(255));
+  cp5.getController("c9").setColorBackground( color(255));
+  counter6 = 0;
+  counter7 = 0;
+  counter8 = 0;
+  counter9 = 0;
+}
+
+public void save(int counter) {
+  noStroke();
+  fill(255);
+  rect(-10,-10,1020,120);
+  counter ++;
+  save("Drawing-" + nf(counter,3) + ".jpeg"); 
+  fill(0,102, 153, 100);
+  textSize(32);
+  text("Drawing has successfully saved", 250, 850);
+}
