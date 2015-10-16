@@ -1,0 +1,231 @@
+import urllib
+import urllib2
+import Tkinter
+import webbrowser
+from Tkinter import *
+import tkMessageBox
+import tkFont
+import os
+from pygame import mixer
+import time
+from HTMLParser import HTMLParser
+class MyHTMLParser(HTMLParser):  #Retrieves list of all files in the directory
+    def handle_starttag(self, tag, attrs):
+        if tag == 'a':
+
+            for key,value in attrs:
+                if key == 'href':
+                    print value
+                    
+link = "http://10.0.74.148:8000/Server/" #Will change throughout
+ip ="http://10.0.74.148:8000/Accounts/" #const
+movie = "movies"#For Videos
+#Create User Interface Functions
+def logMeIn():  
+    def Login():
+        global entUsername
+        global entPassword
+        global username
+        global link
+        global linkIT
+        username = entUsername.get()
+        linkIT = link+username+"/"
+        password = entPassword.get()
+        linkPass =ip+username+"/password.txt"
+        passcode = urllib2.urlopen(linkPass).read()
+        if password == passcode:
+            window.destroy()
+            webServer()
+        else:
+            print "Invalid"
+            
+    def closeIT():
+        window.destroy()        
+        
+    def loginScreen():
+        global entUsername
+        global entPassword
+        global window
+        window = Tkinter.Tk() #Creates the first window
+        window.title("Webserver 1.1")
+        window.geometry("300x150") #Resoultion
+        window.configure(background="#14aeb2")
+            
+        lblUsername = Tkinter.Label(window, text="Username", bg="#14aeb2")
+        entUsername = Tkinter.Entry(window)#Textbox
+        lblPassword = Tkinter.Label(window, text="Password",bg="#14aeb2")
+        entPassword = Tkinter.Entry(window)
+        btnEntry = Tkinter.Button(window, text="Login", command=Login)#buttons
+        btnClose = Tkinter.Button(window, text="Close", command=closeIT)
+
+        #Adds all the widgets to the window
+        lblUsername.pack() 
+        entUsername.pack()
+        lblPassword.pack()
+        entPassword.pack()
+        btnEntry.pack()
+        btnClose.pack()
+        #Widget Placement
+        btnEntry.place(x=105,y=110)
+        btnClose.place(x=165,y=110)
+        lblUsername.place(x=115, y=15)
+        entUsername.place(x=85,y=35)
+        lblPassword.place(x=115,y=55) 
+        entPassword.place(x=85,y=75)
+
+        window.mainloop()
+        
+    loginScreen()
+    
+def soundFileScreen():
+    soundWindow = Tkinter.Tk()
+    soundWindow.title("Sound Controls")
+    soundWindow.geometry("200x300")
+    soundWindow.configure(background="#14aeb2")
+    mainloop()
+    
+#All the possible file types functions
+def videoFile():
+    class Video(object):
+        global movie
+        global whatFile
+        def __init__(self,path):
+            self.path = path
+
+        def play(self):
+            from os import startfile
+            startfile(self.path)
+
+    class Movie_MP4(Video):
+        type = "MP4"
+    movie = Movie_MP4(whatFile)
+    movie.play()
+def soundFile():
+    def playIT():
+        mixer.music.unpause()#Play
+    def pauseIT():
+        mixer.music.pause()#Pause
+    def backIT():
+        mixer.music.pause()#Pause and Quit
+        soundWindow.destroy()
+    def soundFileScreen():
+        global soundWindow
+        soundWindow = Tkinter.Tk()
+        soundWindow.title("Sound Controls")
+        soundWindow.geometry("250x50")
+        soundWindow.configure(background="#14aeb2")
+        
+        play = Button(soundWindow,text ="Play",command=playIT)
+        pause = Button(soundWindow,text ="Pause",command=pauseIT)
+        back = Button(soundWindow,text ="Back",command=backIT)
+        
+        play.pack()
+        pause.pack()
+        back.pack()
+        
+        play.place(x=50,y=15)
+        pause.place(x=95,y=15)
+        back.place(x=150,y=15)
+        
+        mainloop()
+    mixer.init()
+    mixer.music.load(whatFile)
+    mixer.music.play(1,)
+    soundFileScreen()
+def closeText():
+    textWindow.destroy()
+def textFile():
+    data = urllib2.urlopen(linkFile).read() 
+    data = data.split("\n")
+    global textWindow
+    for line in data:
+        print line
+        textWindow = Tkinter.Tk()
+        textWindow.title("Your Text File")
+        textWindow.geometry("400x50")
+        textWindow.configure(background="#14aeb2")
+        
+        textb0x = Label(textWindow,text =data)
+        backExit = Button(textWindow,text ="Back",command=closeText)
+        
+        textb0x.pack()
+        backExit.pack()
+        
+        textb0x.place(x=25,y=15)
+        backExit.place(x=350,y=15)
+        
+        mainloop()
+def photoFile():
+    webbrowser.open(whatFile)
+def mp3File():
+    os.startfile(whatFile)
+def listHtml():
+    URL = urllib.urlopen(link+username+"/"+"files.txt").read()
+    canvas.create_text(250,200, text = URL , font=app.smallerFont)
+
+def fileType():
+    global whatFile
+    global linkIT
+    global username
+    global linkFile
+    linkFile = linkIT
+    whatFile= openFile.get()
+    linkFile = linkFile+whatFile
+    if "txt" in whatFile:
+        textFile()
+    elif "wav" in whatFile:
+        soundFile()
+    elif "mp4" in whatFile:
+        urllib.urlretrieve(linkFile,whatFile)
+        videoFile()
+    elif "mp3" in whatFile:
+        urllib.urlretrieve(linkFile,whatFile)
+        mp3File()
+    elif "png" or "jpg"in whatFile:
+        urllib.urlretrieve(linkFile,whatFile)
+        photoFile()
+    else:
+        print "File type not Supported"
+def logOut():
+    app.destroy()
+    logMeIn()
+def webServer():
+    global canvas
+    global app
+    global openFile
+    app = Tk()
+    app.title("Pi Server")
+    app.geometry("500x500")
+    app.configure(background="#14aeb2")
+    app.customFont = tkFont.Font(family="Calibri", size=20)
+    app.smallerFont = tkFont.Font(family="Calibri", size=12)
+
+
+    openFile = StringVar(None)
+    openFile = Entry(app)
+    openFile.pack(side="bottom")
+    openFile.place(x=200, y=453)
+
+    canvas = Canvas(app, width=500, height=427, bg='#14aeb2')
+    canvas.pack()
+    canvas.create_rectangle(0,85,500,430, fill="white")
+    canvas.create_text(250,45, text = "Welcome to the Pi Server!", font=app.customFont)
+    canvas.create_text(250,100, text = "Your Files are Listed below:", font=app.smallerFont)
+    canvas.create_text(250,418, text = "Enter the filename to open:", font=app.smallerFont)
+
+    menuBar = Menu(app)
+    fileMenu = Menu(menuBar, tearoff=0)
+    fileMenu.add_command(label="Log Out", command=logOut)
+    menuBar.add_cascade(label="File", menu=fileMenu)
+
+    openIt = Button(app,text="Open",command=fileType)
+    openIt.pack()
+    openIt.place(x=375,y=453)
+
+    app.config(menu=menuBar)
+    
+    
+    listHtml()
+    app.mainloop()
+
+logMeIn()
